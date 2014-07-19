@@ -1,18 +1,15 @@
-## Load lattice library
-library(lattice)
-
 ## Load data, identify NA values
 data <- read.csv("activity.csv", header=TRUE, sep=",", na.strings = "NA",
     stringsAsFactors = FALSE)
 
-data$dateTime <- strptime(sprintf("%s %02d:%02d", data$date,
+data$dateTime <- strptime(sprintf("%s %02d:%02d", data$date, 
     data$interval %/% 100, data$interval %% 100),"%Y-%m-%d %H:%M")
 
 data$date <- as.Date(data$date)
 
 ## Summarize total steps per day
-dataStepsByDay <- aggregate(data$steps, by=list(data$date),
-    FUN=sum, na.rm=TRUE)
+dataStepsByDay <- aggregate(data$steps, by=list(data$date), 
+      FUN=sum, na.rm=TRUE)
 
 names(dataStepsByDay) <- c("date", "totalSteps") # fix headings
 
@@ -34,11 +31,11 @@ print(sprintf("Median number of steps per day is %d", dailyMedianSteps))
 dailyMaxSteps  <- round(max(dataStepsByDay$totalSteps, na.rm=TRUE))
 dateMaxSteps <- dataStepsByDay[dataStepsByDay$totalSteps==dailyMaxSteps,1]
 print(sprintf("Max number of steps per day is %d, which occured on %s",
-    dailyMaxSteps, dateMaxSteps))
+      dailyMaxSteps, dateMaxSteps))
 
 ## Summarize by time of day (5 minute intervals)
 dataStepsByTime <- aggregate(data$steps, by=list(data$interval), FUN=mean,
-    na.rm=TRUE)
+        na.rm=TRUE)
 
 names(dataStepsByTime) <- c("interval","meanSteps") ## correct names
 
@@ -61,8 +58,8 @@ timeMaxSteps  <- max(dataStepsByTime$meanSteps, na.rm=TRUE)
 timeOfMaxSteps <- dataStepsByTime[dataStepsByTime$meanSteps
       ==timeMaxSteps,3]
 
-p <- "The max of the average number of steps in a 5-min period is %d, "
-p <- paste(p,"starting at %s"", sep="")
+p <- "The max of the average number of steps in a 5-min period is %d,"
+p <- paste(p,"starting at %s")
 
 print(sprintf(p,round(timeMaxSteps), 
   substr(as.character(timeOfMaxSteps),12,16)))
@@ -119,6 +116,9 @@ dataStepsByTime$dateTime <- strptime(sprintf("%s %02d:%02d", "2014-07-01",
     dataStepsByTime$interval %/% 100, 
     dataStepsByTime$interval %% 100),"%Y-%m-%d %H:%M")
 
+## Load lattice library for this plot
+library(lattice)
+
 ## Plot average number of steps by time of day, with 2 panels:  
 ## weekday vs. weekend
 p <- xyplot(meanSteps ~ interval | weekend, data=dataStepsByTime, 
@@ -126,5 +126,3 @@ p <- xyplot(meanSteps ~ interval | weekend, data=dataStepsByTime,
     xlab="Time of day", ylab="Average number of steps", 
     main="Weekday vs. weekend")
 print(p)
-
-

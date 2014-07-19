@@ -1,29 +1,38 @@
 # Reproducible Research Project 1
 
 
-## Introduction
+### Introduction
 
 It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the quantified self movement  a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
 
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
+### Data
 
+The data for this assignment can be downloaded from the course web site:
 
-## Loading and preprocessing the data
+- Dataset: Activity monitoring data [52K]
+
+The variables included in this dataset are:
+
+- steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+
+- date: The date on which the measurement was taken in YYYY-MM-DD format
+
+- interval: Identifier for the 5-minute interval in which measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+### Loading and preprocessing the data
 
 *1. Load the data (i.e. read.csv())*
 
 *2.Process/transform the data (if necessary) into a format suitable for your analysis*
 
-Data is loaded from the supplied file "activity.csv".  
-The "interval" field in the file is decimal numbers of the 5-minute intervals.  First step is to convert them to time (hours, minutes).  
-The date field in the file is text, needs to be converted to type Date.
+Data is loaded from the supplied file "*activity.csv*".  The "*interval*" field in the file is decimal numbers of the 5-minute intervals.  First step is to convert them to time (hours, minutes).  The date field in the file is text, needs to be converted to type Date.
 
 
 ```r
-## Load lattice library for selected plots
-library(lattice)
-
 ## Load data, identify NA values
 data <- read.csv("activity.csv", header=TRUE, sep=",", na.strings = "NA",
     stringsAsFactors = FALSE)
@@ -34,13 +43,11 @@ data$dateTime <- strptime(sprintf("%s %02d:%02d", data$date,
 data$date <- as.Date(data$date)
 ```
 
-
-
-## What is total number of steps taken per day?
+### What is total number of steps taken per day?
 
 *For this part of the assignment, you can ignore the missing values in the dataset.*
 
-To make a histogram of the number of steps walked each day, and to calculate the mean and median number of steps per day, we will create a table summarizing the total number of steps for each day, using the aggregate function.
+To make a histogram of the number of steps walked each day, and to calculate the mean and median number of steps per day, we will create a table summarizing the total number of steps for each day, using the *aggregate()* function.
 
 
 ```r
@@ -99,12 +106,9 @@ print(sprintf("Max number of steps per day is %d, which occured on %s",
 ## [1] "Max number of steps per day is 21194, which occured on 2012-11-23"
 ```
 
+### What is the average daily activity pattern?
 
-
-## What is the average daily activity pattern?
-
-Now summarize the data by 5-minute intervals, and calculate the mean of each, using the aggregate function.  Convert the intervals to clock time for plotting
-.
+Now summarize the data by 5-minute intervals, and calculate the mean of each, using the *aggregate()* function.  Convert the intervals to clock time for plotting.
 
 
 ```r
@@ -156,9 +160,7 @@ print(sprintf(p,round(timeMaxSteps),
 ## [1] "The max of the average number of steps in a 5-min period is 206, starting at 08:35"
 ```
 
-
-
-## Imputing missing values
+### Imputing missing values
 
 *Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.*
 
@@ -231,7 +233,7 @@ dataStepsByDay <- aggregate(dataReplaceNA$steps,
 names(dataStepsByDay) <- c("date", "totalSteps") ## correct names
 ```
 
-*4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. *
+*4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.*
 
 
 
@@ -264,15 +266,15 @@ print(sprintf("Median number of steps per day is %d", dailyMedianSteps))
 
 *Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?*
 
-They do differ, and both are now equal to the average day.  That's expected, as we used the average day to replace NAs.
+They do differ, and both are now equal to the average day.  That's expected, as we used the average day to replace NAs, and we put 8 days in the mix at the middle of the distribution, affecting the median.
 
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+### Are there differences in activity patterns between weekdays and weekends?
 
 *For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.*
 
 *1. Create a new factor variable in the dataset with two levels  weekday and weekend indicating whether a given date is a weekday or weekend day.*
+
+The *weekdays()* function returns the alpha day of the week, e.g., "Sunday".  Since weekend (and only weekend) days start with "S", we can use that the determine which dates are weekend dates.
 
 
 ```r
@@ -286,7 +288,7 @@ dataReplaceNA$weekend<- as.factor(dataReplaceNA$weekend)
 
 *2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).*
 
-(For purposes of this plot, the "intervals" were not converted to clock time.)
+(For purposes of this plot, the "intervals" were not converted to clock time; *lattice* plot for some reason can't handle the date/time format that base plotting system used.  As a result, there are gaps every hour for the HH:60 to HH:99 non-existent intervals.  At the scale of these plots, this is only a minor issue.)
 
 
 ```r
@@ -299,6 +301,9 @@ dataStepsByTime$dateTime <- strptime(sprintf("%s %02d:%02d", "2014-07-01",
     dataStepsByTime$interval %/% 100, 
     dataStepsByTime$interval %% 100),"%Y-%m-%d %H:%M")
 
+## Load lattice library for this plot
+library(lattice)
+
 ## Plot average number of steps by time of day, with 2 panels:  
 ## weekday vs. weekend
 p <- xyplot(meanSteps ~ interval | weekend, data=dataStepsByTime, 
@@ -309,3 +314,10 @@ print(p)
 ```
 
 ![plot of chunk unnamed-chunk-13](./Project1_files/figure-html/unnamed-chunk-13.png) 
+
+An examination of the weekend vs. weekday plots shows:
+
+* For both, there is a peak of activity between 8-9 am.
+* Activity on weekdays continues at a lower level tahn on weekends, with peaks at lunchtime, mid-afternoon and early evening.
+* Activity on weekends continues off and on all day.
+* For both, activity tapers off after 8-9 pm, then goes quiet until 5-6 am the next day.
